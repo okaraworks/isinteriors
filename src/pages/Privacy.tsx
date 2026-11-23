@@ -19,7 +19,7 @@ export default function Privacy() {
           <h2>Storage and security</h2>
           <p>Enquiries are stored in Google Firebase. Access is restricted to authorised studio staff, and the database rejects any attempt to read enquiries without studio sign-in.</p>
           <h2>Analytics</h2>
-          <p>With your consent we use Google Analytics for Firebase to understand how the site is used. You can decline, and the site works the same.</p>
+          <p>With your consent we record anonymous page views (page, device type, referring website and date, with no names, IDs or IP addresses) in our own Firebase database, and may use Google Analytics for Firebase. You can decline, and the site works the same.</p>
           <h2>Your rights</h2>
           <p>You can ask us to see, correct or delete the information we hold about you at any time by contacting the studio.</p>
         </div>

@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { conceptBySlug } from '../../data/concepts'
 import { allMoodItems } from '../../data/moodboard'
 import { submitInquiry, type InquiryType } from '../../lib/inquiries'
+import { trackFormStart, trackFormSubmit } from '../../lib/stats'
 import { whatsappLink, whatsappMessages } from '../../lib/whatsapp'
 import { Button, ButtonLink } from '../ui/Button'
 
@@ -173,6 +174,7 @@ export function SiteVisitForm({ initialType = 'site-visit', design, moodboard = 
         setProgress,
       )
       setResult(r)
+      if (r.mode === 'firebase') trackFormSubmit(type)
       setStatus('sent')
       reset()
       photos.forEach((p) => URL.revokeObjectURL(p.url))
@@ -226,7 +228,7 @@ export function SiteVisitForm({ initialType = 'site-visit', design, moodboard = 
   const describedBy = (n: keyof FormValues) => (errors[n] ? `${id(n)}-error` : undefined)
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="space-y-10">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} onFocusCapture={trackFormStart} noValidate className="space-y-10">
       <fieldset>
         <legend className="eyebrow mb-4">I would like to</legend>
         <div className="grid grid-cols-2 border border-line" role="radiogroup">

@@ -5,6 +5,8 @@ import { ConsentBanner } from './ConsentBanner'
 import { CustomCursor } from './CustomCursor'
 import { Footer } from './Footer'
 import { Header } from './Header'
+import { IntroLoader } from './IntroLoader'
+import { PageviewTracker } from './PageviewTracker'
 import { ScrollManager } from './ScrollManager'
 import { WhatsAppWidget } from './WhatsAppWidget'
 
@@ -18,7 +20,9 @@ export function Layout() {
   const outlet = useOutlet()
   return (
     <>
+      <IntroLoader />
       <ScrollManager />
+      <PageviewTracker />
       <Header />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main

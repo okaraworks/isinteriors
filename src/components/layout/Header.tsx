@@ -51,7 +51,7 @@ export function Header() {
       >
         <div className="container-editorial flex h-20 items-center justify-between gap-6">
           <Link to="/" aria-label="ISOE Interiors — home" className="relative z-10 text-espresso">
-            <Logo />
+            <Logo draw />
           </Link>
 
           <nav aria-label="Primary" className="hidden lg:block">

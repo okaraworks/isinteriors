@@ -73,6 +73,22 @@ service cloud.firestore {
       }
     }
 
+    // Anonymous, consent-gated site statistics (see src/lib/stats.ts).
+    // Create-only for visitors with a strict schema; readable by admins.
+    match /events/{eventId} {
+      allow create: if request.resource.data.keys().hasOnly(['type', 'path', 'design', 'inquiryType', 'device', 'referrer', 'newVisitor', 'day', 'createdAt'])
+        && request.resource.data.type in ['pageview', 'form_start', 'form_submit']
+        && str(request.resource.data.path, 1, 120)
+        && (request.resource.data.design == null || str(request.resource.data.design, 1, 60))
+        && (request.resource.data.inquiryType == null || request.resource.data.inquiryType in ['site-visit', 'consultation'])
+        && request.resource.data.device in ['mobile', 'tablet', 'desktop']
+        && (request.resource.data.referrer == null || str(request.resource.data.referrer, 1, 80))
+        && request.resource.data.newVisitor is bool
+        && str(request.resource.data.day, 10, 10) && request.resource.data.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+    }
+
     // Admin allow-list: readable only by the admin themself, never writable from the client.
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;

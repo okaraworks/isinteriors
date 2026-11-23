@@ -66,7 +66,7 @@ export function Hero() {
             </p>
             <motion.div
               style={{ y: smallY }}
-              className="absolute -left-[30%] -bottom-[6%] hidden w-[36%] border-[10px] border-ivory xl:block"
+              className="absolute -left-[34%] bottom-[10%] hidden w-[34%] border-[10px] border-ivory xl:block"
               initial={reduce ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.2, delay: 1 }}

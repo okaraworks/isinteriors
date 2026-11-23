@@ -1,13 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { firebaseConfig, firebaseEnabled, startAnalytics } from '../../lib/firebase'
+import { firebaseEnabled, startAnalytics } from '../../lib/firebase'
+import { CONSENT_KEY, trackPageview } from '../../lib/stats'
 import { safeStorage } from '../../lib/storage'
 
-const KEY = 'isoe:analytics-consent'
+const KEY = CONSENT_KEY
 
 /** Analytics only loads after an explicit "Accept". Hidden when analytics isn't configured. */
 export function ConsentBanner() {
-  const available = firebaseEnabled && !!firebaseConfig.measurementId
+  const available = firebaseEnabled
   const [choice, setChoice] = useState<'granted' | 'denied' | null>(() => safeStorage.get(KEY, null))
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export function ConsentBanner() {
   const decide = (c: 'granted' | 'denied') => {
     safeStorage.set(KEY, c)
     setChoice(c)
+    if (c === 'granted') void trackPageview(window.location.pathname)
   }
 
   return (
@@ -32,7 +34,7 @@ export function ConsentBanner() {
           className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ivory"
         >
           <div className="container-editorial flex flex-col gap-4 py-5 pr-20 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-2xl text-sm text-ink-soft">We would like to use analytics cookies to understand how visitors use this site. Nothing is collected unless you accept.</p>
+            <p className="max-w-2xl text-sm text-ink-soft">May we count your visit? We record anonymous page views (no names, IDs or IP addresses) to understand which designs people like. Nothing is collected unless you accept.</p>
             <div className="flex gap-3">
               <button onClick={() => decide('denied')} className="border border-line px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">
                 Decline

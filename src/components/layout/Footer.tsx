@@ -45,7 +45,7 @@ export function Footer() {
 
         <div className="grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <Monogram className="h-16 w-16 text-ivory" />
+            <Monogram className="h-20 w-16 text-ivory" title="ISOE Interiors I/I monogram" />
             <p className="mt-6 max-w-xs text-sm text-ivory/70">{site.description}</p>
           </div>
           <nav aria-label="Services" className="lg:col-span-3">
@@ -124,7 +124,7 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/studio/inquiries" className="link-underline">
+              <Link to="/studio" className="link-underline">
                 Studio login
               </Link>
             </li>

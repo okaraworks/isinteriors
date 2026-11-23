@@ -24,6 +24,7 @@ npm run lint
 | `/projects` | Sample case studies |
 | `/book-a-site-visit` | Site visit / consultation form (`?type=consultation`, `?design=slug`, `?moodboard=…`, `?estimate=…` prefill it) |
 | `/privacy` | Draft privacy notice |
+| `/studio` | Studio-only stats dashboard: page views & visitors per day, top pages & designs, inquiries by type/status, visitor→inquiry and form-completion rates, devices, referrers (Firebase Auth) |
 | `/studio/inquiries` | Studio-only inquiry inbox (Firebase Auth) |
 
 ## Things to replace before launch
@@ -49,7 +50,7 @@ Copy `.env.example` → `.env` and fill in the web-app config. Without it the si
 | Photo uploads | Firestore: resized in-browser to ≤ ~640 KB JPEG (EXIF/GPS stripped) | Free |
 | Studio inbox login | Authentication (email/password) | Free |
 | Bot protection | App Check with reCAPTCHA v3 | Free |
-| Visitor analytics (after cookie consent only) | Google Analytics for Firebase | Free |
+| Visitor analytics (after consent only) | Google Analytics for Firebase + first-party anonymous `events` in Firestore powering `/studio` | Free (1 write per page view; dashboard reads 1 doc per event in range) |
 | Full-resolution photo uploads (`VITE_PHOTO_UPLOAD_MODE=storage`) | Cloud Storage — `storage.rules` | **Needs Blaze** |
 | Email/SMS notification on each new inquiry | Cloud Functions or the Trigger Email extension | **Needs Blaze** |
 
@@ -77,6 +78,10 @@ Copy `.env.example` → `.env` and fill in the web-app config. Without it the si
 * Client: Zod validation, honeypot field, minimum fill time, soft rate limit, input sanitising, image type/size checks, EXIF stripping.
 * Server (`firestore.rules`): create-only for the public with an exact field allow-list, type and length checks, `status == 'new'`, server timestamp; photos only within 15 minutes of their inquiry and ≤ 900 KB; read/update/delete only for admins; everything else denied.
 * App Check (when enforced) blocks requests that don't come from this site.
+
+## Brand
+
+The I/I monogram is redrawn as vector from the studio's logo (`src/components/brand/Logo.tsx`, `public/brand/isoe-logo.svg`, `public/favicon.svg`; original artwork in `public/brand/isoe-logo-original.png`). It keeps the logo's navy `#172446` and gold `#C19A55`; the site palette stays ivory / beige / taupe / espresso. The mark draws itself in a short intro on the first visit of a session, draws in the header, and its gold dots lift on hover — all skipped for reduced motion.
 
 ## Architecture
 

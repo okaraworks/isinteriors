@@ -13,6 +13,7 @@ const Projects = lazy(() => import('./pages/Projects'))
 const BookVisit = lazy(() => import('./pages/BookVisit'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const StudioInquiries = lazy(() => import('./pages/StudioInquiries'))
+const StudioStats = lazy(() => import('./pages/StudioStats'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 const Router = import.meta.env.VITE_ROUTER === 'hash' ? HashRouter : BrowserRouter
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="projects" element={<Projects />} />
               <Route path="book-a-site-visit" element={<BookVisit />} />
               <Route path="privacy" element={<Privacy />} />
+              <Route path="studio" element={<StudioStats />} />
               <Route path="studio/inquiries" element={<StudioInquiries />} />
               <Route path="*" element={<NotFound />} />
             </Route>
