@@ -59,8 +59,8 @@ jobs:
       VITE_STUDIO_EMAIL: ${{ vars.VITE_STUDIO_EMAIL }}
       VITE_STUDIO_LAT: ${{ vars.VITE_STUDIO_LAT }}
       VITE_STUDIO_LNG: ${{ vars.VITE_STUDIO_LNG }}
-      VITE_STUDIO_PHONE: ${{ vars.VITE_STUDIO_PHONE }}
-      VITE_WHATSAPP_NUMBER: ${{ vars.VITE_WHATSAPP_NUMBER }}
+      VITE_STUDIO_PHONE: ${{ vars.VITE_STUDIO_PHONE || '+254 706 529 548' }}
+      VITE_WHATSAPP_NUMBER: ${{ vars.VITE_WHATSAPP_NUMBER || '254706529548' }}
     steps:
       - uses: actions/checkout@v4
 
