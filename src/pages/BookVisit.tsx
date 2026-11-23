@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router'
+import { SchedulingEmbed } from '../components/forms/SchedulingEmbed'
 import { SiteVisitForm } from '../components/forms/SiteVisitForm'
 import { Artwork } from '../components/ui/Artwork'
 import { PageHero } from '../components/ui/PageHero'
@@ -30,8 +31,10 @@ export default function BookVisit() {
       />
       <section className="pb-28 sm:pb-36">
         <div className="container-editorial grid gap-16 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+          <div className="space-y-16 lg:col-span-7">
+            {type === 'consultation' && <SchedulingEmbed />}
             <SiteVisitForm initialType={type} design={design} moodboard={moodboard} estimate={estimate} />
+            {type !== 'consultation' && <SchedulingEmbed />}
           </div>
           <aside className="lg:col-span-4 lg:col-start-9">
             <div className="lg:sticky lg:top-28">

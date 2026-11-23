@@ -26,7 +26,7 @@ export async function compressImage(file: File, maxDim = 1600, maxBase64Length =
     canvas.height = h
     const ctx = canvas.getContext('2d')!
     ctx.drawImage(bitmap, 0, 0, w, h)
-    const dataUrl = canvas.toDataURL('image/jpeg', quality)
+    const dataUrl = canvas.toDataURL('image/jpeg', maxDim > 2000 ? Math.max(quality, 0.88) : quality)
     if (dataUrl.length <= maxBase64Length) return { dataUrl, width: w, height: h }
     if (quality > 0.55) quality -= 0.1
     else dim = Math.round(dim * 0.8)

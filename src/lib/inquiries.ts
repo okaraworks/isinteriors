@@ -1,5 +1,7 @@
 import { firebaseEnabled, getDb, getFirebaseApp, photoUploadMode, trackEvent } from './firebase'
 import { compressImage } from './imageCompress'
+import { cloudinaryUploadsEnabled, uploadToCloudinary } from './cloudinary'
+import { emailNotifyEnabled, notifyStudio } from './emailNotify'
 
 export type InquiryType = 'site-visit' | 'consultation'
 
@@ -20,7 +22,7 @@ export interface InquiryInput {
 
 export interface InquiryResult {
   id: string
-  mode: 'firebase' | 'demo'
+  mode: 'firebase' | 'email' | 'demo'
 }
 
 /** Strip control characters and trim; Firestore rules enforce lengths again server-side. */
@@ -61,55 +63,104 @@ export function sanitizeInquiry(input: InquiryInput) {
 }
 
 /**
- * Pluggable submit handler. With Firebase configured the inquiry is written to
- * Firestore; otherwise a demo handler simulates success so the UI can be
- * reviewed without a backend.
+ * Pluggable submit handler:
+ *   1. photos → Cloudinary (full size, if configured) or compressed into Firestore
+ *   2. inquiry → Firestore (if Firebase is configured)
+ *   3. email alert → EmailJS or Formspree (if configured)
+ * With none configured, a demo handler simulates success so the UI can be reviewed.
  */
 export async function submitInquiry(input: InquiryInput, onProgress?: (msg: string) => void): Promise<InquiryResult> {
   checkRateLimit()
   const data = sanitizeInquiry(input)
+  const ref = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`
 
-  if (!firebaseEnabled) {
+  if (!firebaseEnabled && !emailNotifyEnabled()) {
     await new Promise((r) => setTimeout(r, 900))
-    if (import.meta.env.DEV) console.info('[demo] inquiry not sent — Firebase is not configured', data, input.photos.map((f) => f.name))
-    return { id: `demo-${Date.now().toString(36)}`, mode: 'demo' }
+    if (import.meta.env.DEV) console.info('[demo] inquiry not sent — no backend configured', data, input.photos.map((f) => f.name))
+    return { id: `demo-${ref}`, mode: 'demo' }
   }
 
-  const db = await getDb()
-  const { collection, doc, serverTimestamp, setDoc } = await import('firebase/firestore')
-  const ref = doc(collection(db, 'inquiries'))
-  onProgress?.('Sending your details…')
-  await setDoc(ref, {
-    ...data,
-    photoCount: input.photos.length,
-    photoStorage: photoUploadMode,
-    status: 'new',
-    createdAt: serverTimestamp(),
-  })
+  // 1. Full-size photos to Cloudinary first, so their links can be saved and emailed.
+  const useCloudinary = cloudinaryUploadsEnabled() && input.photos.length > 0
+  const photoUrls: string[] = []
+  if (useCloudinary) {
+    for (let i = 0; i < input.photos.length; i++) {
+      onProgress?.(`Uploading photo ${i + 1} of ${input.photos.length}…`)
+      // Re-encode at high quality first: keeps full size but strips EXIF/GPS metadata.
+      const { dataUrl } = await compressImage(input.photos[i], 3200, 14_000_000)
+      photoUrls.push(await uploadToCloudinary(dataUrl, ref))
+    }
+  }
 
-  for (let i = 0; i < input.photos.length; i++) {
-    onProgress?.(`Uploading photo ${i + 1} of ${input.photos.length}…`)
-    const file = input.photos[i]
-    if (photoUploadMode === 'storage') {
-      // Requires the Blaze plan: Cloud Storage buckets are not available on Spark.
-      const app = await getFirebaseApp()
-      const { getStorage, ref: sref, uploadBytes } = await import('firebase/storage')
-      const safeName = file.name.replace(/[^\w.-]+/g, '_').slice(-80)
-      await uploadBytes(sref(getStorage(app), `inquiries/${ref.id}/${i}-${safeName}`), file, { contentType: file.type })
-    } else {
-      const { dataUrl, width, height } = await compressImage(file)
-      await setDoc(doc(db, 'inquiries', ref.id, 'photos', String(i)), {
-        index: i,
-        name: clean(file.name, 120),
-        contentType: 'image/jpeg',
-        width,
-        height,
-        data: dataUrl,
-        createdAt: serverTimestamp(),
+  // 2. Firestore record.
+  let id = ref
+  if (firebaseEnabled) {
+    const db = await getDb()
+    const { collection, doc, serverTimestamp, setDoc } = await import('firebase/firestore')
+    const docRef = doc(collection(db, 'inquiries'))
+    id = docRef.id
+    onProgress?.('Sending your details…')
+    await setDoc(docRef, {
+      ...data,
+      photoCount: input.photos.length,
+      photoStorage: useCloudinary ? 'cloudinary' : photoUploadMode,
+      ...(useCloudinary ? { photoUrls } : {}),
+      status: 'new',
+      createdAt: serverTimestamp(),
+    })
+
+    if (!useCloudinary) {
+      for (let i = 0; i < input.photos.length; i++) {
+        onProgress?.(`Uploading photo ${i + 1} of ${input.photos.length}…`)
+        const file = input.photos[i]
+        if (photoUploadMode === 'storage') {
+          // Requires the Blaze plan: Cloud Storage buckets are not available on Spark.
+          const app = await getFirebaseApp()
+          const { getStorage, ref: sref, uploadBytes } = await import('firebase/storage')
+          const safeName = file.name.replace(/[^\w.-]+/g, '_').slice(-80)
+          await uploadBytes(sref(getStorage(app), `inquiries/${id}/${i}-${safeName}`), file, { contentType: file.type })
+        } else {
+          const { dataUrl, width, height } = await compressImage(file)
+          await setDoc(doc(db, 'inquiries', id, 'photos', String(i)), {
+            index: i,
+            name: clean(file.name, 120),
+            contentType: 'image/jpeg',
+            width,
+            height,
+            data: dataUrl,
+            createdAt: serverTimestamp(),
+          })
+        }
+      }
+    }
+  }
+
+  // 3. Email alert to the studio.
+  if (emailNotifyEnabled()) {
+    try {
+      await notifyStudio({
+        subject: `New ${data.type === 'site-visit' ? 'site visit' : 'consultation'} request from ${data.name}`,
+        inquiry_type: data.type === 'site-visit' ? 'Site visit' : 'Consultation',
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        location: data.location,
+        property_type: data.propertyType,
+        preferred_date: data.preferredDate,
+        description: data.description,
+        design: data.design || '—',
+        moodboard: data.moodboard.join(', ') || '—',
+        estimate: data.estimate || '—',
+        photos: photoUrls.length ? photoUrls.join('\n') : input.photos.length ? `${input.photos.length} photo(s) — see the studio inbox` : 'None',
+        reference: id,
       })
+    } catch (e) {
+      // If the inquiry is already safely in Firestore, a failed email must not fail the request.
+      if (!firebaseEnabled) throw e
+      if (import.meta.env.DEV) console.warn('[email] notification failed', e)
     }
   }
 
   void trackEvent('generate_lead', { inquiry_type: data.type })
-  return { id: ref.id, mode: 'firebase' }
+  return { id, mode: firebaseEnabled ? 'firebase' : 'email' }
 }

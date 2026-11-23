@@ -16,11 +16,11 @@ export const site = {
 
   contact: {
     /** e.g. '+234 800 000 0000' — PLACEHOLDER, supply real number */
-    phone: null as string | null,
+    phone: (import.meta.env.VITE_STUDIO_PHONE as string | undefined) || null,
     /** e.g. 'studio@isoeinteriors.com' — PLACEHOLDER, supply real address */
-    email: null as string | null,
+    email: (import.meta.env.VITE_STUDIO_EMAIL as string | undefined) || null,
     /** International format, digits only, no '+' (e.g. '2348000000000') — PLACEHOLDER */
-    whatsapp: null as string | null,
+    whatsapp: (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined) || null,
     /** Studio address lines — PLACEHOLDER */
     address: null as string[] | null,
     /** Opening hours line — PLACEHOLDER */

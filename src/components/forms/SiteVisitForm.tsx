@@ -79,7 +79,7 @@ export function SiteVisitForm({ initialType = 'site-visit', design, moodboard = 
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [progress, setProgress] = useState('')
   const [serverError, setServerError] = useState<string | null>(null)
-  const [result, setResult] = useState<{ id: string; mode: 'firebase' | 'demo' } | null>(null)
+  const [result, setResult] = useState<{ id: string; mode: 'firebase' | 'email' | 'demo' } | null>(null)
   const startedAt = useRef(0)
   const fileInput = useRef<HTMLInputElement>(null)
   const concept = conceptBySlug(design)
@@ -174,7 +174,7 @@ export function SiteVisitForm({ initialType = 'site-visit', design, moodboard = 
         setProgress,
       )
       setResult(r)
-      if (r.mode === 'firebase') trackFormSubmit(type)
+      if (r.mode !== 'demo') trackFormSubmit(type)
       setStatus('sent')
       reset()
       photos.forEach((p) => URL.revokeObjectURL(p.url))

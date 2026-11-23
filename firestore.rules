@@ -23,7 +23,7 @@ service cloud.firestore {
     function validInquiry(d) {
       return d.keys().hasOnly(['type', 'name', 'phone', 'email', 'location', 'propertyType',
                                'preferredDate', 'description', 'design', 'moodboard', 'estimate',
-                               'photoCount', 'photoStorage', 'status', 'createdAt'])
+                               'photoCount', 'photoStorage', 'photoUrls', 'status', 'createdAt'])
         && d.keys().hasAll(['type', 'name', 'phone', 'email', 'location', 'propertyType',
                             'preferredDate', 'description', 'photoCount', 'status', 'createdAt'])
         && d.type in ['site-visit', 'consultation']
@@ -38,7 +38,8 @@ service cloud.firestore {
         && (!('estimate' in d) || str(d.estimate, 0, 300))
         && (!('moodboard' in d) || (d.moodboard is list && d.moodboard.size() <= 12))
         && d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 6
-        && (!('photoStorage' in d) || d.photoStorage in ['firestore', 'storage'])
+        && (!('photoStorage' in d) || d.photoStorage in ['firestore', 'storage', 'cloudinary'])
+        && (!('photoUrls' in d) || (d.photoUrls is list && d.photoUrls.size() <= 6))
         && d.status == 'new'
         && d.createdAt == request.time;
     }

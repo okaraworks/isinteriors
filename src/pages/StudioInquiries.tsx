@@ -17,6 +17,7 @@ interface Inquiry {
   estimate?: string
   photoCount: number
   photoStorage?: string
+  photoUrls?: string[]
   status: string
   createdAt?: { toDate: () => Date }
 }
@@ -64,6 +65,10 @@ function InquiryList() {
   const loadPhotos = async (inq: Inquiry) => {
     if (photos[inq.id] || !inq.photoCount) return
     const db = await getDb()
+    if (inq.photoStorage === 'cloudinary') {
+      setPhotos((p) => ({ ...p, [inq.id]: (inq.photoUrls ?? []).filter((u) => u.startsWith('https://res.cloudinary.com/')) }))
+      return
+    }
     if (inq.photoStorage === 'storage') {
       const { getFirebaseApp } = await import('../lib/firebase')
       const { getStorage, ref, listAll, getDownloadURL } = await import('firebase/storage')

@@ -1,10 +1,13 @@
 import { RoomScene, type RoomKind, type SceneProps } from '../art/RoomScene'
 import { conceptBySlug, concepts } from '../../data/concepts'
+import { cloudinaryImage } from '../../lib/cloudinary'
 
 interface ArtworkProps {
   /** Real photograph. When supplied it replaces the illustrated placeholder. */
   src?: string
   srcSet?: string
+  /** Cloudinary public ID; served responsive with automatic format/quality. */
+  cloudinaryId?: string
   sizes?: string
   alt: string
   conceptSlug?: string
@@ -21,8 +24,11 @@ interface ArtworkProps {
  * Single entry point for imagery. Pass `src` once studio photography exists;
  * until then the matching concept's illustrated scene is rendered.
  */
-export function Artwork({ src, srcSet, sizes, alt, conceptSlug, room, state, seedOffset = 0, priority, className = '', zoom = true }: ArtworkProps) {
+export function Artwork({ src: srcProp, srcSet: srcSetProp, cloudinaryId, sizes = '(min-width: 1024px) 50vw, 100vw', alt, conceptSlug, room, state, seedOffset = 0, priority, className = '', zoom = true }: ArtworkProps) {
   const concept = conceptBySlug(conceptSlug) ?? concepts[0]
+  const cld = cloudinaryId ? cloudinaryImage(cloudinaryId) : null
+  const src = srcProp ?? cld?.src
+  const srcSet = srcSetProp ?? cld?.srcSet
   const zoomCls = zoom ? 'transition-transform duration-[1600ms] ease-[var(--ease-editorial)] group-hover:scale-[1.045]' : ''
   return (
     <div className={`${/(^|\s)absolute(\s|$)/.test(className) ? '' : 'relative '}overflow-hidden bg-beige ${className}`}>

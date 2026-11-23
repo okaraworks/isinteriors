@@ -104,3 +104,24 @@ src/
 **Motion & accessibility:** reveal animations, smooth scroll (desktop pointers only) and the custom cursor (fine pointers only) are all disabled for `prefers-reduced-motion`. Skip link, labelled landmarks, keyboard-operable slider/tabs/menus, visible focus, form errors announced and linked with `aria-describedby`.
 
 **SEO:** per-page `<title>`, description, canonical and Open Graph tags (React 19 metadata), `InteriorDesigner` JSON-LD, `sitemap.xml`, `robots.txt`. For best crawlability on launch, consider pre-rendering the routes (e.g. `vite-react-ssg`) — client-rendered pages are indexed by Google but not by every crawler.
+
+## Free integrations (sign up, then paste into `.env`)
+
+Everything below is optional and free. Each one stays switched off until its value is set, so nothing breaks while you sign up. After editing `.env`, rebuild (`npm run build`) and redeploy.
+
+| Service | What it does | Sign up | Paste into `.env` | Free limit |
+| --- | --- | --- | --- | --- |
+| **Cal.com** *or* **Calendly** | Clients pick a consultation slot on the booking page | cal.com / calendly.com → create a 30‑min "Consultation" event | `VITE_CAL_LINK` (e.g. `isoe-interiors/consultation`) *or* `VITE_CALENDLY_URL` | Cal.com: unlimited; Calendly: 1 event type |
+| **EmailJS** *or* **Formspree** | Emails the studio every new inquiry (no Blaze plan needed) | emailjs.com: add an Email Service + Template · formspree.io: create a form | `VITE_EMAILJS_PUBLIC_KEY`, `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID` *or* `VITE_FORMSPREE_FORM_ID` | EmailJS 200/month; Formspree 50/month |
+| **WhatsApp click‑to‑chat** | Floating WhatsApp button + links | none | `VITE_WHATSAPP_NUMBER` (digits only, with country code) | free |
+| **Cloudinary** | Stores full‑size inquiry photos; serves project photos responsive (`<Artwork cloudinaryId="…"/>`) | cloudinary.com → Settings → Upload → Upload preset, **Signing mode: Unsigned**, folder `inquiries`, allowed formats jpg/png/webp, max size 15 MB | `VITE_CLOUDINARY_CLOUD_NAME`, `VITE_CLOUDINARY_UPLOAD_PRESET` | 25 credits/month (~25 GB) |
+| **Microsoft Clarity** | Heatmaps and session recordings; loads only after the visitor accepts analytics | clarity.microsoft.com → New project | `VITE_CLARITY_PROJECT_ID` | free, unlimited |
+| **Google Search Console** | Search rankings, indexing; submit `/sitemap.xml` | search.google.com/search-console → URL prefix → HTML tag | `VITE_GOOGLE_SITE_VERIFICATION` (only the `content` value) | free |
+| **Bing Webmaster Tools** | Same for Bing (can import from Search Console) | bing.com/webmasters → HTML Meta Tag | `VITE_BING_SITE_VERIFICATION` | free |
+
+EmailJS template variables available: `{{subject}} {{inquiry_type}} {{name}} {{phone}} {{email}} {{location}} {{property_type}} {{preferred_date}} {{description}} {{design}} {{moodboard}} {{estimate}} {{photos}} {{reference}}` (set the template's Reply‑To to `{{email}}`).
+
+Notes:
+- The site's Content‑Security‑Policy in `firebase.json` already allows these services. If you host elsewhere, copy the same headers.
+- Before going live, add Clarity, Cloudinary and your email provider to the Privacy page as processors.
+- Also set `VITE_STUDIO_PHONE`, `VITE_STUDIO_EMAIL` and `VITE_SITE_URL`; the site shows "to be added" placeholders until then.
