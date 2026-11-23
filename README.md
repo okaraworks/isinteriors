@@ -129,3 +129,16 @@ Notes:
 ## Live address
 
 The site is set up for **https://isoeinteriors.web.app** (Firebase Hosting site `isoeinteriors` in project `i-and-i-66d78`, see `firebase.json`). Canonical links, Open Graph URLs, `sitemap.xml` and `robots.txt` all use it via `VITE_SITE_URL`. Deploy with `npm run build && firebase deploy --only hosting`.
+
+## Studio map (OpenStreetMap, free)
+
+The booking page shows the studio on an OpenStreetMap map (Leaflet, no API key), and the footer links to it. Map tiles load only when a visitor presses "Show map". Set `VITE_STUDIO_LAT`, `VITE_STUDIO_LNG` and `VITE_STUDIO_ADDRESS` (lines separated by `|`); until then a placeholder shows. Attribution to OpenStreetMap contributors is displayed as the tile policy requires.
+
+## Deploy from GitHub
+
+`.github/workflows/firebase-deploy.yml` builds and deploys on every push to `main` (Hosting + Firestore rules), and posts a 7‑day preview link on pull requests. One-time setup, all in the browser:
+
+1. Firebase console → ⚙ Project settings → **Service accounts** → **Generate new private key** (downloads a JSON file).
+2. GitHub repo → Settings → Secrets and variables → Actions → **New repository secret**: name `FIREBASE_SERVICE_ACCOUNT`, paste the whole JSON. Then delete the downloaded file.
+3. Optional: in the **Variables** tab add any `VITE_*` values from `.env.example` (phone, address, map pin, booking link, EmailJS, Cloudinary, Clarity…). The Firebase web config is already filled in.
+4. Make sure the Hosting site `isoeinteriors` exists (Hosting → Add another site).

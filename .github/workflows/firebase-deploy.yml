@@ -1,0 +1,104 @@
+# Builds the site and deploys it to Firebase (https://isoeinteriors.web.app).
+#
+# • Push to main  → deploys Hosting + Firestore rules/indexes to the live site.
+# • Pull request  → deploys a temporary preview URL (posted on the PR), live site untouched.
+#
+# One-time setup (all in the browser):
+#   1. Firebase console → Project settings → Service accounts → Generate new private key.
+#   2. GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+#      named FIREBASE_SERVICE_ACCOUNT, paste the whole JSON file, then delete the downloaded file.
+#   3. Optional: under the Variables tab add any VITE_* value from .env.example
+#      (booking link, EmailJS, Cloudinary, Clarity, phone, address, map pin…).
+#      The Firebase web config below is public by design and already filled in.
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: firebase-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    env:
+      FIREBASE_PROJECT: i-and-i-66d78
+      VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://isoeinteriors.web.app' }}
+      VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY || 'AIzaSyBXhiNRiz0jQHbDJNJZvnSOsoIVmcNM5AU' }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN || 'i-and-i-66d78.firebaseapp.com' }}
+      VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID || 'i-and-i-66d78' }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET || 'i-and-i-66d78.firebasestorage.app' }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID || '910032649621' }}
+      VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID || '1:910032649621:web:c2b36a8a23d8b96b060a9c' }}
+      VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID || 'G-27642YFXJW' }}
+      VITE_BING_SITE_VERIFICATION: ${{ vars.VITE_BING_SITE_VERIFICATION }}
+      VITE_CALENDLY_URL: ${{ vars.VITE_CALENDLY_URL }}
+      VITE_CAL_LINK: ${{ vars.VITE_CAL_LINK }}
+      VITE_CLARITY_PROJECT_ID: ${{ vars.VITE_CLARITY_PROJECT_ID }}
+      VITE_CLOUDINARY_CLOUD_NAME: ${{ vars.VITE_CLOUDINARY_CLOUD_NAME }}
+      VITE_CLOUDINARY_UPLOAD_PRESET: ${{ vars.VITE_CLOUDINARY_UPLOAD_PRESET }}
+      VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
+      VITE_EMAILJS_TEMPLATE_ID: ${{ vars.VITE_EMAILJS_TEMPLATE_ID }}
+      VITE_FIREBASE_APPCHECK_SITE_KEY: ${{ vars.VITE_FIREBASE_APPCHECK_SITE_KEY }}
+      VITE_FORMSPREE_FORM_ID: ${{ vars.VITE_FORMSPREE_FORM_ID }}
+      VITE_GOOGLE_SITE_VERIFICATION: ${{ vars.VITE_GOOGLE_SITE_VERIFICATION }}
+      VITE_PHOTO_UPLOAD_MODE: ${{ vars.VITE_PHOTO_UPLOAD_MODE }}
+      VITE_STUDIO_ADDRESS: ${{ vars.VITE_STUDIO_ADDRESS }}
+      VITE_STUDIO_EMAIL: ${{ vars.VITE_STUDIO_EMAIL }}
+      VITE_STUDIO_LAT: ${{ vars.VITE_STUDIO_LAT }}
+      VITE_STUDIO_LNG: ${{ vars.VITE_STUDIO_LNG }}
+      VITE_STUDIO_PHONE: ${{ vars.VITE_STUDIO_PHONE }}
+      VITE_WHATSAPP_NUMBER: ${{ vars.VITE_WHATSAPP_NUMBER }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+      - name: Check the deploy secret is set
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::error::Add the FIREBASE_SERVICE_ACCOUNT secret (see the top of this file)."
+            exit 1
+          fi
+
+      # Pull requests: temporary preview channel, expires after 7 days.
+      - name: Deploy preview
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ env.FIREBASE_PROJECT }}
+          expires: 7d
+
+      # main: live Hosting + Firestore security rules and indexes.
+      - name: Deploy live site and Firestore rules
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@latest deploy --only hosting,firestore --project "$FIREBASE_PROJECT" --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"

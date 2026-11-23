@@ -173,3 +173,9 @@ html.has-custom-cursor select {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* OpenStreetMap tiles toned to the ivory / taupe palette */
+.osm-warm .leaflet-tile-pane { filter: sepia(0.35) saturate(0.55) contrast(0.95) brightness(1.03); }
+.osm-warm.leaflet-container { background: var(--color-beige, #E9DFD1); font-family: inherit; }
+.osm-warm .leaflet-control-attribution { background: rgb(248 246 241 / 0.85); color: #45382F; font-size: 10px; }
+.osm-warm .leaflet-bar a { color: #45382F; border-radius: 0; }

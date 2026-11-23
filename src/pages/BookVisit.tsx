@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router'
 import { SchedulingEmbed } from '../components/forms/SchedulingEmbed'
 import { SiteVisitForm } from '../components/forms/SiteVisitForm'
+import { StudioMap } from '../components/map/StudioMap'
 import { Artwork } from '../components/ui/Artwork'
 import { PageHero } from '../components/ui/PageHero'
 import { Seo } from '../components/ui/Seo'
@@ -56,6 +57,9 @@ export default function BookVisit() {
                 <p>{c.phone ? <a href={`tel:${c.phone.replace(/\s/g, '')}`} className="link-underline">{c.phone}</a> : <span className="placeholder-text text-ink-soft">{PLACEHOLDER.phone}</span>}</p>
                 <p>{c.email ? <a href={`mailto:${c.email}`} className="link-underline">{c.email}</a> : <span className="placeholder-text text-ink-soft">{PLACEHOLDER.email}</span>}</p>
               </div>
+              <h2 className="mt-10 eyebrow">Find the studio</h2>
+              <p className="mt-3 text-sm">{c.address?.length ? c.address.join(', ') : <span className="placeholder-text text-ink-soft">{PLACEHOLDER.address[0]}</span>}</p>
+              <StudioMap className="mt-5" />
             </div>
           </aside>
         </div>

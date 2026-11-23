@@ -30,6 +30,9 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_SITE_VERIFICATION?: string
   readonly VITE_BING_SITE_VERIFICATION?: string
   readonly VITE_WHATSAPP_NUMBER?: string
+  readonly VITE_STUDIO_ADDRESS?: string
+  readonly VITE_STUDIO_LAT?: string
+  readonly VITE_STUDIO_LNG?: string
   readonly VITE_STUDIO_PHONE?: string
   readonly VITE_STUDIO_EMAIL?: string
 }

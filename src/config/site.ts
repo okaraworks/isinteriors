@@ -22,10 +22,17 @@ export const site = {
     /** International format, digits only, no '+' (e.g. '2348000000000') — PLACEHOLDER */
     whatsapp: (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined) || null,
     /** Studio address lines — PLACEHOLDER */
-    address: null as string[] | null,
+    address: ((import.meta.env.VITE_STUDIO_ADDRESS as string | undefined) || '').split('|').map((s) => s.trim()).filter(Boolean) as string[] | null,
     /** Opening hours line — PLACEHOLDER */
     hours: null as string | null,
   },
+
+  /** Studio map pin (OpenStreetMap). Set VITE_STUDIO_LAT and VITE_STUDIO_LNG — PLACEHOLDER until supplied. */
+  location: (() => {
+    const lat = Number(import.meta.env.VITE_STUDIO_LAT)
+    const lng = Number(import.meta.env.VITE_STUDIO_LNG)
+    return import.meta.env.VITE_STUDIO_LAT && import.meta.env.VITE_STUDIO_LNG && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null
+  })(),
 
   social: {
     /** Instagram handle without '@' — PLACEHOLDER */

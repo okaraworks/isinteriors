@@ -1,3 +1,4 @@
+import { osmLink } from '../map/StudioMap'
 import { Link } from 'react-router'
 import { PLACEHOLDER, site } from '../../config/site'
 import { services } from '../../data/services'
@@ -76,7 +77,12 @@ export function Footer() {
             <p className="eyebrow text-beige/80">Studio</p>
             <ul className="mt-5 space-y-2.5 text-sm text-ivory/80">
               <li>
-                <Value value={c.address?.join(', ') ?? null} placeholder={PLACEHOLDER.address[0]} />
+                <Value value={c.address?.length ? c.address.join(', ') : null} placeholder={PLACEHOLDER.address[0]} />
+                {osmLink && (
+                  <a href={osmLink} target="_blank" rel="noopener noreferrer" className="link-underline ml-2 text-xs uppercase tracking-[0.18em]">
+                    Map ↗
+                  </a>
+                )}
               </li>
               <li>
                 <Value value={c.phone} placeholder={PLACEHOLDER.phone} href={c.phone ? `tel:${c.phone.replace(/\s/g, '')}` : undefined} />
