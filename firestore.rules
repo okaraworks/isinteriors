@@ -1,0 +1,86 @@
+rules_version = '2';
+
+// ISOE Interiors — Firestore security rules
+//
+// • Anyone may CREATE an inquiry, but only with the exact fields and limits below.
+// • Nobody but studio admins can READ, UPDATE or DELETE inquiries.
+// • Admins are users whose UID has a document in /admins/{uid}
+//   (create it by hand in the Firebase console — see README).
+// • Enforce App Check on Firestore in the console so only this website can write.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    function validInquiry(d) {
+      return d.keys().hasOnly(['type', 'name', 'phone', 'email', 'location', 'propertyType',
+                               'preferredDate', 'description', 'design', 'moodboard', 'estimate',
+                               'photoCount', 'photoStorage', 'status', 'createdAt'])
+        && d.keys().hasAll(['type', 'name', 'phone', 'email', 'location', 'propertyType',
+                            'preferredDate', 'description', 'photoCount', 'status', 'createdAt'])
+        && d.type in ['site-visit', 'consultation']
+        && str(d.name, 2, 120)
+        && str(d.phone, 7, 40) && d.phone.matches('^\\+?[0-9 ().-]{7,}$')
+        && str(d.email, 5, 160) && d.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && str(d.location, 2, 200)
+        && str(d.propertyType, 2, 60)
+        && str(d.preferredDate, 10, 10) && d.preferredDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && str(d.description, 20, 4000)
+        && (!('design' in d) || str(d.design, 0, 80))
+        && (!('estimate' in d) || str(d.estimate, 0, 300))
+        && (!('moodboard' in d) || (d.moodboard is list && d.moodboard.size() <= 12))
+        && d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 6
+        && (!('photoStorage' in d) || d.photoStorage in ['firestore', 'storage'])
+        && d.status == 'new'
+        && d.createdAt == request.time;
+    }
+
+    match /inquiries/{inquiryId} {
+      allow create: if validInquiry(request.resource.data);
+      allow read, delete: if isAdmin();
+      // Admins may only change the workflow status.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['new', 'contacted', 'scheduled', 'closed'];
+
+      // Compressed photos (free Spark plan mode). Each is a ≤ ~640 KB JPEG data URL.
+      match /photos/{photoId} {
+        function parent() {
+          return get(/databases/$(database)/documents/inquiries/$(inquiryId)).data;
+        }
+        allow create: if photoId in ['0', '1', '2', '3', '4', '5']
+          && int(photoId) < parent().photoCount
+          && request.time < parent().createdAt + duration.value(15, 'm')
+          && request.resource.data.keys().hasOnly(['index', 'name', 'contentType', 'width', 'height', 'data', 'createdAt'])
+          && request.resource.data.index == int(photoId)
+          && request.resource.data.contentType == 'image/jpeg'
+          && request.resource.data.data is string
+          && request.resource.data.data.size() <= 900000
+          && request.resource.data.data.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+          && str(request.resource.data.name, 0, 120)
+          && request.resource.data.width is int && request.resource.data.width <= 2000
+          && request.resource.data.height is int && request.resource.data.height <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow read, delete: if isAdmin();
+      }
+    }
+
+    // Admin allow-list: readable only by the admin themself, never writable from the client.
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

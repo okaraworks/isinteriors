@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Only used when VITE_PHOTO_UPLOAD_MODE=storage. Cloud Storage requires the
+// Blaze (pay-as-you-go) plan; the default free setup stores compressed photos
+// in Firestore instead.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /inquiries/{inquiryId}/{fileName} {
+      allow create: if request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)')
+        && fileName.matches('^[0-5]-[A-Za-z0-9_.-]{1,80}$')
+        && firestore.exists(/databases/(default)/documents/inquiries/$(inquiryId));
+      allow read, delete: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+      allow update: if false;
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

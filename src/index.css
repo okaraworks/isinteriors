@@ -1,0 +1,175 @@
+@import 'tailwindcss';
+
+/* Brand colour system — the only colours used across the UI. */
+@theme {
+  --color-ivory: #f8f6f1;
+  --color-beige: #e9dfd1;
+  --color-taupe: #a78b70;
+  --color-espresso: #45382f;
+  --color-bronze: #8a6a4a;
+  --color-white: #ffffff;
+  --color-line: rgb(69 56 47 / 0.14);
+  --color-ink-soft: rgb(69 56 47 / 0.72);
+
+  --font-display: 'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-display-xl: clamp(3.4rem, 10.5vw, 11.5rem);
+  --text-display-xl--line-height: 0.88;
+  --text-display-lg: clamp(2.6rem, 6.4vw, 6.6rem);
+  --text-display-lg--line-height: 0.95;
+  --text-display-md: clamp(2.1rem, 4.2vw, 4.25rem);
+  --text-display-md--line-height: 1.02;
+  --text-display-sm: clamp(1.6rem, 2.4vw, 2.4rem);
+  --text-display-sm--line-height: 1.1;
+
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --breakpoint-3xl: 1920px;
+}
+
+@layer base {
+  html {
+    background: var(--color-ivory);
+    color: var(--color-espresso);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-top: 6rem;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    background: var(--color-ivory);
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-espresso);
+    color: var(--color-ivory);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 1.5px solid var(--color-espresso);
+    outline-offset: 3px;
+  }
+  img,
+  svg {
+    display: block;
+  }
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+@layer components {
+  .container-editorial {
+    width: 100%;
+    max-width: 1680px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 4rem);
+  }
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-taupe);
+  }
+  .rule {
+    height: 1px;
+    background: var(--color-line);
+  }
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.5s var(--ease-editorial);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+  .field-input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgb(69 56 47 / 0.28);
+    padding: 0.7rem 0;
+    border-radius: 0;
+    transition: border-color 0.3s;
+  }
+  .field-input::placeholder {
+    color: rgb(69 56 47 / 0.4);
+  }
+  .field-input:focus {
+    outline: none;
+    border-bottom-color: var(--color-espresso);
+  }
+  .field-input[aria-invalid='true'] {
+    border-bottom-color: #9a3b2e;
+  }
+  .placeholder-text {
+    border-bottom: 1px dashed currentColor;
+    opacity: 0.7;
+  }
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Hide native cursor only when the custom cursor is active (fine pointers only). */
+html.has-custom-cursor,
+html.has-custom-cursor a,
+html.has-custom-cursor button,
+html.has-custom-cursor [role='slider'] {
+  cursor: none;
+}
+html.has-custom-cursor input,
+html.has-custom-cursor textarea,
+html.has-custom-cursor select {
+  cursor: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /studio/
+
+# Replace with your live domain once known.
+Sitemap: https://www.example.com/sitemap.xml
