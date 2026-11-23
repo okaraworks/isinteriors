@@ -15,6 +15,7 @@ export function SchedulingEmbed() {
       ? `${calendlyUrl}${calendlyUrl.includes('?') ? '&' : '?'}hide_gdpr_banner=1&background_color=f8f6f1&text_color=45382f&primary_color=45382f`
       : null
   const provider = calLink ? 'Cal.com' : 'Calendly'
+  const directUrl = calLink ? `https://cal.com/${calLink.replace(/^\/+/, '')}` : calendlyUrl
 
   return (
     <section aria-labelledby="schedule-title" className="border border-line bg-white p-6 sm:p-8">
@@ -33,7 +34,12 @@ export function SchedulingEmbed() {
           <button type="button" onClick={() => setOpen(true)} className="border border-espresso px-6 py-3.5 text-[0.7rem] font-semibold uppercase tracking-[0.18em] hover:bg-espresso hover:text-ivory">
             Show available times
           </button>
-          <p className="text-xs text-ink-soft">Opens the studio&rsquo;s {provider} calendar.</p>
+          {directUrl && (
+            <a href={directUrl} target="_blank" rel="noopener noreferrer" className="link-underline text-xs uppercase tracking-[0.18em]">
+              Open in a new tab ↗
+            </a>
+          )}
+          <p className="w-full text-xs text-ink-soft">Opens the studio&rsquo;s {provider} calendar.</p>
         </div>
       )}
     </section>
