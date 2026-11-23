@@ -125,3 +125,7 @@ Notes:
 - The site's Content‑Security‑Policy in `firebase.json` already allows these services. If you host elsewhere, copy the same headers.
 - Before going live, add Clarity, Cloudinary and your email provider to the Privacy page as processors.
 - Also set `VITE_STUDIO_PHONE`, `VITE_STUDIO_EMAIL` and `VITE_SITE_URL`; the site shows "to be added" placeholders until then.
+
+## Live address
+
+The site is set up for **https://isoeinteriors.web.app** (Firebase Hosting site `isoeinteriors` in project `i-and-i-66d78`, see `firebase.json`). Canonical links, Open Graph URLs, `sitemap.xml` and `robots.txt` all use it via `VITE_SITE_URL`. Deploy with `npm run build && firebase deploy --only hosting`.

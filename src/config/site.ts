@@ -12,7 +12,7 @@ export const site = {
   tagline: 'Interior architecture & design studio',
   description:
     'ISOE Interiors is an interior architecture and design studio creating calm, crafted residential, commercial and hospitality spaces.',
-  url: (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, '') || 'https://www.example.com',
+  url: (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, '') || 'https://isoeinteriors.web.app',
 
   contact: {
     /** e.g. '+234 800 000 0000' — PLACEHOLDER, supply real number */

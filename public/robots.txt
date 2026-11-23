@@ -3,4 +3,4 @@ Allow: /
 Disallow: /studio/
 
 # Replace with your live domain once known.
-Sitemap: https://www.example.com/sitemap.xml
+Sitemap: https://isoeinteriors.web.app/sitemap.xml

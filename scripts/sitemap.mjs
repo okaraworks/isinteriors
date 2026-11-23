@@ -9,7 +9,7 @@ const env = Object.fromEntries(
     .filter(Boolean)
     .map((m) => [m[1], m[2]]),
 )
-const site = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || 'https://www.example.com').replace(/\/$/, '')
+const site = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || 'https://isoeinteriors.web.app').replace(/\/$/, '')
 const slugs = [...readFileSync('src/data/concepts.ts', 'utf8').matchAll(/slug: '([a-z-]+)'/g)].map((m) => m[1])
 const paths = ['/', '/designs', '/services', '/projects', '/book-a-site-visit', '/privacy', ...slugs.map((s) => `/designs/${s}`)]
 const today = new Date().toISOString().slice(0, 10)
